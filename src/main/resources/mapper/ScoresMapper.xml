@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dm.education.Dao.ScoresDao">
+    <resultMap id="SocresMap" type="com.dm.education.Model.Scores">
+        <result column="SCORE_ID" property="score_id"/>
+        <result column="STUDENT_ID" property="student_id"/>
+        <result column="COURSE_ID" property="course_id"/>
+        <result column="SCORE" property="score"/>
+        <result column="SCORE_STATE" property="score_state"/>
+    </resultMap>
+
+    <insert id="insertScores">
+        INSERT INTO DMEXAM.SCORES (SCORE_ID, STUDENT_ID, COURSE_ID, SCORE, SCORE_STATE)
+        VALUES (#{score_id}, #{student_id}, #{course_id}, #{score}, #{score_state})
+    </insert>
+    <update id="updateScoreByStudentIdAndCourseId">
+        update DMEXAM.SCORES
+        set score = #{score}
+        where student_id = #{student_id}
+          and course_id = #{course_id}
+    </update>
+    <delete id="removeScores">
+        delete
+        from DMEXAM.SCORES
+        where STUDENT_ID = #{studentId}
+          AND COURSE_ID = #{courseId}
+    </delete>
+
+    <select id="findByStudentIdAndCourseId" resultType="java.lang.Long">
+        select count(1)
+        from DMEXAM.SCORES
+        WHERE STUDENT_ID = #{studentId}
+          AND COURSE_ID = #{courseId};
+    </select>
+
+    <select id="findMyStudentList" resultType="com.dm.education.vo.StudentVO">
+        SELECT st.STUDENT_NAME   as studentName,
+               d.DEPARTMENT_NAME as departmentName,
+               st.STUDENT_GENDER as gender,
+               s.score           as score,
+               st.STUDENT_ID     as studentId
+        FROM DMEXAM.STUDENTS st
+                 LEFT JOIN DMEXAM.MAJORS m ON m.MAJOR_ID = st.MAJOR_ID
+                 LEFT JOIN DMEXAM.DEPARTMENTS d ON d.DEPARTMENT_ID = m.DEPARTMENT_ID
+                 LEFT JOIN DMEXAM.SCORES s ON s.STUDENT_ID = st.STUDENT_ID AND s.COURSE_ID = #{courseId}
+        WHERE s.COURSE_ID = #{courseId};
+    </select>
+
+
+</mapper>

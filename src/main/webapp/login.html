@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录页面</title>
+    <link rel="shortcut icon" href="#"/>
+    <link rel="stylesheet" type="text/css" href="static/css/file.css"/>
+    <link rel="stylesheet" type="text/css" href="static/css/login.css"/>
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <script src="static/js/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="static/js/axios.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="static/js/layx.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="static/js/Interface.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div id="app">
+    <div class="d-flex flex-column login">
+        <h2>管 理 系 统</h2>
+        <form action="" class="d-flex flex-column">
+            <div class="d-flex user">
+                <span class="iconfont icon-yonghu"></span>
+                <input type="text" placeholder="请输入账号" v-model="id">
+            </div>
+            <div class="d-flex psd">
+                <span class="iconfont icon-mima"></span>
+                <input type="password" placeholder="请输入密码" v-model="pwd">
+            </div>
+            <div class="d-flex type">
+						<span class="iconfont icon-mima" style="width: 100%;">
+							<input type="radio" style="margin-left: 4%;" v-model="type" value="1"><span
+                                style="margin-left: 4%;">学生登录</span>
+							<input type="radio" style="margin-left: 4%;" v-model="type" value="2"><span
+                                style="margin-left: 4%;">教师登录</span>
+						</span>
+            </div>
+            <a :href="href" class="submit" type="button" @click="Login">登 录</a>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+    var App = new Vue({
+        el: "#app",
+        data: {
+            href: 'javascript:void(0);',
+            id: "",
+            pwd: "",
+            type: "1"
+        },
+        methods: {
+            Login: function () {
+                var id = this.id;
+                var pwd = this.pwd;
+                const type = this.type;
+                if (id == null || id == "") {
+                    alert("账号不能为空！");
+                } else if (pwd == null || pwd == "") {
+                    alert("密码不能为空！");
+                } else if (type == 0) {
+                    alert("登录类型不能为空！");
+                }
+                switch (type) {
+                    case "1":
+                        axios.get(url + "Login/student", {
+                            params: {
+                                id: id,
+                                pwd: pwd,
+                                type: type
+                            }
+                        }).then((response) => {
+                            if (response.data.code == 1) {
+                                alert(response.data.msg);
+                            } else {
+                                var student = JSON.stringify(response.data.data);
+                                localStorage.setItem("student", student);
+                                window.location.href = "student/courseList.html";
+                            }
+                        }).catch(
+                            response => {
+                                alert('请重新确认账号密码！');
+                            },
+                        );
+                        break;
+                    case "2":
+                        axios.get(url + "Login/teacher", {
+                            params: {
+                                id: id,
+                                pwd: pwd,
+                                type: type
+                            }
+                        }).then((response) => {
+                            if (response.data.code == 1) {
+                                alert(response.data.msg);
+                            } else {
+                                var teacher = JSON.stringify(response.data.data);
+                                localStorage.setItem("teacher", teacher);
+                                window.location.href = "teacher/courseList.html";
+                            }
+                        }).catch(
+                            response => {
+                                alert('请重新确认账号密码！');
+                            },
+                        );
+                        break;
+                    default:
+                        alert("登录类型异常！");
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

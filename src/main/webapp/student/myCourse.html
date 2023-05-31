@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的课程列表 </title>
+    <link rel="shortcut icon" href="#"/>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/studentCourse.css">
+    <link rel="stylesheet" href="../static/css/iconfont.css">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <script src="../static/js/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../static/js/jquery-3.6.0.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/Interface.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../static/js/axios.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div id="app">
+    <!-- 导航 -->
+    <nav class="navbar navbar-expand-sm fixed-top">
+        <a class="navbar-brand" href="#">{{name}}</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                    {{student.student_name}}
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" @click="logout">注销</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!--侧边导航-->
+    <div class="main d-flex">
+        <div id="accordion" class="list">
+            <div class="card">
+                <div class="card-header">
+                    <a class="card-link" data-toggle="collapse" href="#collapseOne"
+                       @click="pages('../student/courseList.html')">
+                        <span class="iconfont icon-xiangmu"></span>
+                        所有课程
+                        <span class="iconfont icon-xialajiantou"></span>
+                    </a>
+
+                </div>
+                <div class="card-header">
+                    <a class="card-link" href="#collapseOne"
+                       @click="pages('../student/myCourse.html')">
+                        <span class="iconfont icon-xiangmu"></span>
+                        我的课程
+                        <span class="iconfont icon-xialajiantou"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--内容区域-->
+    <div class="content">
+        <table class="tab">
+            <tr class="head">
+                <th>列表序号</th>
+                <th>课程名称</th>
+                <th>课程老师</th>
+                <th>课程成绩</th>
+            </tr>
+            <tr class="bodys" v-for="(course, index) in cont.list">
+                <td>{{index + 1}}</td>
+                <td>{{course.course_name}}</td>
+                <td>{{course.teacherName}}</td>
+                <td>{{course.score}}</td>
+                <td>
+                    <button class="mod btn btn-sm btn-outline-warning"
+                            @click="unrollCourse(course.course_id)"
+                    >取消报名
+                    </button>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+    <div>
+        <nav class="pages">
+            <ul>
+                <p style="font-size: 1vw;margin-right: 50px;"> 当前查询结果共 {{cont.total}} 条数据</p>
+                <button class="btn btn-sm btn-primary" :data-id="1" @click="GoPage">首页</button>
+                <button class="btn btn-sm btn-primary" :data-id="2" @click="GoPage">上一页</button>
+                <li v-for="(p, index) in cont.pages" :data-type="p" :data-id="3" class="btn btn-sm"
+                    v-if="cont.pageNum - p < 3 && cont.pageNum - p > -3"
+                    :class="index+1 == cont.pageNum ? 'navactive' : ''" @click="GoPage">{{p}}
+                </li>
+                <button class="btn btn-sm btn-primary" :data-id="4" @click="GoPage">下一页</button>
+                <button class="btn btn-sm btn-primary" :data-id="5" @click="GoPage">尾页</button>
+                <li>共{{cont.pages}}页</li>
+                <a style="font-size: 1.5vw;">GO </a><input
+                    style="width: 50px;margin-left: 10px;text-align: center;" type="number" @blur="turn"
+                    v-model="goPage"/>
+            </ul>
+        </nav>
+    </div>
+
+
+</div>
+
+
+<script type="text/javascript">
+    var App = new Vue({
+        el: '#app',
+        data: {
+            name: '管理系统',
+            cont: {},
+            student: {},
+            goPage: 1,
+            page: 1,
+            rows: 10
+        },
+        methods: {
+            GoPage(event) {
+                var id = event.target.dataset.id;
+                var type = event.target.dataset.type;
+                if (id == 1) {
+                    var page = this.cont.firstPage;
+                    this.skip(page, this.rows);
+                } else if (id == 2) {
+                    if (this.cont.pageNum != this.cont.firstPage) {
+                        var page = this.cont.pageNum - 1;
+                        this.skip(page, this.rows);
+                    }
+                } else if (id == 3) {
+                    var page = type;
+                    this.skip(page, this.rows);
+                } else if (id == 4) {
+                    if (this.cont.pageNum != this.cont.lastPage) {
+                        var page = this.cont.nextPage;
+                        this.skip(page, this.rows);
+                    }
+                } else if (id == 5) {
+                    var page = this.cont.lastPage;
+                    this.skip(page, this.rows);
+                }
+            },
+            turn() {
+                var y = String(this.goPage).indexOf(".") + 1;
+                if (this.goPage > this.cont.lastPage) {
+                    alert("页码超出！");
+                } else if (this.goPage < 1) {
+                    alert("页码错误！");
+                } else if (y > 0) {
+                    alert("页码错误！");
+                } else {
+                    this.skip(this.goPage, this.rows);
+                }
+            },
+            skip(page, rows) {
+                this.student = JSON.parse(localStorage.getItem("student"));
+                localStorage.setItem("courseId", courseId);
+                this.teacher = JSON.parse(localStorage.getItem("teacher"));
+                if (this.teacher === null) {
+                    window.location.href = "../login.html";
+                }
+                axios.get(url + 'teacher/findCourseByTeacherId', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'http://localhost:8085'
+                    },
+                    params: {
+                        page: parseInt(page),
+                        rows: parseInt(rows),
+                        id: this.student.student_id,
+                    },
+                }).then(
+                    response => {
+                        if (response.data.code == 200) {
+                            this.cont = response.data.data;
+                        } else {
+                            alert(response.data.msg);
+                        }
+                    }
+                ).catch(
+                    response => {
+                        alert('请求失败');
+                    },
+                );
+            },
+            pages(url) {
+                window.location.href = url;
+            },
+            logout() {
+                if (confirm("确认退出？")) {
+                    localStorage.clear();
+                    window.location.href = "../login.html";
+                }
+            },
+            //取消报名
+            unrollCourse(courseId) {
+                // 构造请求数据
+                this.student = JSON.parse(localStorage.getItem("student"));
+                var requestData = {
+                    course_id: courseId,
+                    student_id: this.student.student_id,
+                };
+
+                // 使用 Axios 发送 POST 请求
+                axios.post(url + "student/unrollCourse", requestData)
+                    .then(
+                        response => {
+                            if (response.data.code == 200) {
+                                alert(response.data.msg);
+                                location.reload();
+                            } else {
+                                alert(response.data.msg);
+                            }
+                        }
+                    )
+                    .catch(function (error) {
+                        // 请求失败处理逻辑
+                        alert("取消报名失败")
+                        console.error('Enrollment failed', error);
+                    });
+            }
+        },
+        beforeMount: function () {
+            this.student = JSON.parse(localStorage.getItem("student"));
+            if (this.student === null) {
+                window.location.href = "../login.html";
+            }
+
+            axios.get(url + 'student/findAllCourse', {
+                params: {
+                    page: 1,
+                    rows: 10,
+                    id: this.student.student_id,
+                },
+            }).then(
+                response => {
+                    if (response.data.code == 200) {
+                        this.cont = response.data.data;
+                    } else {
+                        alert(response.data.msg);
+                    }
+                }
+            ).catch(
+                response => {
+                    alert('请求失败');
+                },
+            );
+        }
+    });
+</script>
+</body>
+</html>
