@@ -19,22 +19,23 @@
 
 1. 克隆项目到本地：
    ```
-   git clone https://github.com/your-username/your-project.git
+   git clone https://github.com/BlueBeastMight/DMEducation.git
    ```
 2. 进入项目目录：
    ```
-   cd your-project
+   cd EducationDS
    ```
 3. 配置DM数据库连接参数：打开`application.properties`文件，根据实际情况修改DM数据库的连接参数。
 4. 构建项目：
+   - 添加lib目录下的dm驱动到项目
+   - 加载pom
    ```
    mvn clean package
    ```
+   
 5. 运行项目：
-   ```
-   java -jar target/your-project.jar
-   ```
-6. 在浏览器中访问：[http://localhost:8080](http://localhost:8080) 查看项目运行情况。
+   - 在浏览器中访问：[http://localhost:8080/EducationDS/login.html]查看项目运行情况。
+
 
 ## 使用示例
 
@@ -88,7 +89,3 @@ public class UserController {
 该项目的版权归湖北信创大赛所有。有关详细信息，请参阅许可证文件。
 
 ---
-
-请根据
-
-实际情况修改上述内容，包括项目名称、安装指南和使用示例等。
